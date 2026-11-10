@@ -1,3 +1,4 @@
+[![MLOps CI](https://github.com/eltitowenda/mlops-diabetes/actions/workflows/ci.yml/badge.svg)](https://github.com/eltitowenda/mlops-diabetes/actions/workflows/ci.yml)
 # Práctica 4: sistema MLOps para predecir la progresión de la diabetes
 
 En esta práctica hemos cogido el notebook que teníamos con el dataset de diabetes de scikit-learn y lo hemos convertido en un repositorio organizado: scripts para los datos, entrenamiento con MLflow, una API con FastAPI y un workflow de GitHub Actions que lo ejecuta todo solo. No buscábamos el mejor modelo posible, sino entender cómo encaja cada pieza.
