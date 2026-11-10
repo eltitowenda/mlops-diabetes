@@ -1,0 +1,60 @@
+name: MLOps CI
+
+# Runs automatically on every push to main or master (and manually from the Actions tab)
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+
+jobs:
+  mlops-pipeline:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Unit tests (data logic + API with a fake model)
+        run: python -m pytest -v
+
+      # ---------------- MLOps pipeline, in order ----------------
+      - name: "1/5 Data extraction"
+        run: python -m src.data.extract
+
+      - name: "2/5 Data validation"
+        run: python -m src.data.validate
+
+      - name: "3/5 Data cleaning"
+        run: python -m src.data.clean
+
+      - name: "4/5 Model training (MLflow tracking)"
+        run: python -m src.training.train
+
+      - name: "5/5 Model registration, quality gate and champion selection"
+        run: python -m src.registry.register
+      # -----------------------------------------------------------
+
+      - name: Integration test - serve the real champion model
+        env:
+          RUN_INTEGRATION: "1"
+        run: python -m pytest tests/test_integration.py -v
+
+      - name: Upload MLflow results and reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mlflow-results
+          path: |
+            mlflow.db
+            mlruns/
+            reports/
+          if-no-files-found: ignore
